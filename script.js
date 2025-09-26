@@ -239,44 +239,61 @@ function animateSkillBars() {
     skillObserver.observe(skillSection);
 }
 
-// Contact Form Functionality
+// Contact Form Functionality with EmailJS
 function setupContactForm() {
     const form = document.getElementById('contactForm');
+    
+    // Initialize EmailJS
+    emailjs.init({
+        publicKey: 'OA47HUZxRvHgko80ssSR-', // Your EmailJS public key
+    });
     
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
         // Get form data
+        const submitButton = document.getElementById('submitBtn');
+        const originalText = submitButton.textContent;
         const formData = new FormData(form);
-        const name = formData.get('name');
-        const email = formData.get('email');
-        const message = formData.get('message');
+        
+        const templateParams = {
+            from_name: formData.get('from_name'),
+            from_email: formData.get('from_email'),
+            subject: formData.get('subject'),
+            message: formData.get('message'),
+            to_name: 'Mayur Chaudhari', // Your name
+        };
         
         // Basic validation
-        if (!name || !email || !message) {
+        if (!templateParams.from_name || !templateParams.from_email || !templateParams.subject || !templateParams.message) {
             showNotification('Please fill in all fields', 'error');
             return;
         }
         
-        if (!isValidEmail(email)) {
+        if (!isValidEmail(templateParams.from_email)) {
             showNotification('Please enter a valid email address', 'error');
             return;
         }
         
-        // Simulate form submission
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.textContent;
-        
+        // Update button state
         submitButton.textContent = 'Sending...';
         submitButton.disabled = true;
         
-        // Simulate API call
-        setTimeout(() => {
-            showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
-            form.reset();
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
-        }, 2000);
+        // Send email using EmailJS
+        emailjs.send('default_service', 'template_txhvoud', templateParams)
+            .then(function(response) {
+                console.log('SUCCESS!', response.status, response.text);
+                showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+                form.reset();
+            })
+            .catch(function(error) {
+                console.log('FAILED...', error);
+                showNotification('Failed to send message. Please try again or email me directly.', 'error');
+            })
+            .finally(function() {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            });
     });
 }
 
