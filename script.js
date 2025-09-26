@@ -239,62 +239,89 @@ function animateSkillBars() {
     skillObserver.observe(skillSection);
 }
 
-// Contact Form Functionality with EmailJS
+// Simple EmailJS Setup - Basic Implementation
 function setupContactForm() {
     const form = document.getElementById('contactForm');
     
-    // Initialize EmailJS
-    emailjs.init({
-        publicKey: 'OA47HUZxRvHgko80ssSR-', // Your EmailJS public key
-    });
+    // Wait for EmailJS to load
+    function waitForEmailJS() {
+        if (typeof emailjs === 'undefined') {
+            console.log('Waiting for EmailJS to load...');
+            setTimeout(waitForEmailJS, 500);
+            return;
+        }
+        
+        console.log('✅ EmailJS loaded successfully');
+        
+        // Simple initialization - try the most basic approach
+        try {
+            emailjs.init('BKcrn7rkoyC7wdWJ0');
+            console.log('✅ EmailJS initialized with public key');
+        } catch (error) {
+            console.error('❌ EmailJS init failed:', error);
+        }
+        
+        // Set up form submission
+        form.addEventListener('submit', handleFormSubmit);
+        console.log('✅ Form listener attached');
+    }
     
-    form.addEventListener('submit', function(e) {
+    // Simple form submission handler
+    function handleFormSubmit(e) {
         e.preventDefault();
+        console.log('📝 Form submitted');
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.textContent;
         
         // Get form data
-        const submitButton = document.getElementById('submitBtn');
-        const originalText = submitButton.textContent;
-        const formData = new FormData(form);
-        
-        const templateParams = {
-            from_name: formData.get('from_name'),
-            from_email: formData.get('from_email'),
-            subject: formData.get('subject'),
-            message: formData.get('message'),
-            to_name: 'Mayur Chaudhari', // Your name
+        const formData = {
+            from_name: document.getElementById('from_name').value,
+            from_email: document.getElementById('from_email').value,
+            subject: document.getElementById('subject').value,
+            message: document.getElementById('message').value,
+            to_name: 'Anushka Shinde'
         };
         
-        // Basic validation
-        if (!templateParams.from_name || !templateParams.from_email || !templateParams.subject || !templateParams.message) {
-            showNotification('Please fill in all fields', 'error');
+        console.log('📋 Form data:', formData);
+        
+        // Validate
+        if (!formData.from_name || !formData.from_email || !formData.subject || !formData.message) {
+            alert('Please fill all fields');
             return;
         }
         
-        if (!isValidEmail(templateParams.from_email)) {
-            showNotification('Please enter a valid email address', 'error');
-            return;
-        }
+        // Update button
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
         
-        // Update button state
-        submitButton.textContent = 'Sending...';
-        submitButton.disabled = true;
+        console.log('🚀 Sending email...');
         
-        // Send email using EmailJS
-        emailjs.send('default_service', 'template_txhvoud', templateParams)
+        // Use CORRECT service ID and template ID
+        console.log('Using correct service ID: service_9a5trv4');
+        emailjs.send('service_9a5trv4', 'template_l2jd0zs', formData)
             .then(function(response) {
-                console.log('SUCCESS!', response.status, response.text);
-                showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+                console.log('✅ SUCCESS with correct service ID!', response.status, response.text);
+                alert('Message sent successfully!');
                 form.reset();
             })
             .catch(function(error) {
-                console.log('FAILED...', error);
-                showNotification('Failed to send message. Please try again or email me directly.', 'error');
+                console.error('❌ FAILED with correct service ID:', error);
+                console.log('📋 ERROR DETAILS:', {
+                    text: error.text,
+                    status: error.status,
+                    message: error.message
+                });
+                alert('Failed to send message: ' + (error.text || error.message || 'Unknown error'));
             })
             .finally(function() {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             });
-    });
+    }
+    
+    // Start the process
+    waitForEmailJS();
 }
 
 // Email validation
@@ -537,5 +564,19 @@ function createScrollProgress() {
 
 // Initialize scroll progress
 createScrollProgress();
+
+// Call setup function when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM loaded, setting up EmailJS...');
+    
+    // Wait for EmailJS and run basic setup check
+    setTimeout(() => {
+        if (typeof emailjs !== 'undefined') {
+            console.log('✅ EmailJS loaded and ready');
+        } else {
+            console.log('❌ EmailJS failed to load');
+        }
+    }, 1000);
+});
 
 // Removed easter egg for better performance
